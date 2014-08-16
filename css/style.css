@@ -1,0 +1,22 @@
+body {
+	margin:0;
+	padding:0;
+}
+#wrapper {
+	width:800px;
+	height:600px;
+	background:white;
+	text-align:left;
+	margin-left:auto;
+	margin-right:auto;
+}
+#enchant-stage {
+	width:800px;
+	height:600px;
+}
+h1 {
+	font-size:medium;
+}
+h2 {
+	font-size:medium;
+}
