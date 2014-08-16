@@ -104,13 +104,6 @@ var GameScene = Class.create(enchant.Scene, {
 		this.spriteClouds = [];
 		for (var i = 0; i < 1; i++) {
 			this.createCloud(200, 500, 1);
-			//var spriteCloud = new Sprite(100, 100);
-			//spriteCloud.image = game.assets[IMAGE_CLOUD1];
-			//spriteCloud.x = 200;
-			//spriteCloud.y = 300;
-			//this.addChild(spriteCloud);
-			//this.spriteClouds.push(spriteCloud);
-			//this.elements.push(spriteCloud);
 		}
 		this.createCloud(600, 500, 1);
 
