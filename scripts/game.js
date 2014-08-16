@@ -6,6 +6,7 @@ var GAME_HEIGHT = 800;
 var game;
 
 var sceneGame;
+var sceneTitle;
 
 var IMAGE_SUN = "images/sun.png";
 var IMAGE_SPIRIT = "images/spirit.png";
