@@ -7,19 +7,23 @@ var game;
 
 var sceneGame;
 var sceneTitle;
+var sceneGameOver;
 
 var IMAGE_SUN = "images/sun.png";
 var IMAGE_SPIRIT = "images/spirit.png";
 var IMAGE_BEAM = "images/beam.png";
 var IMAGE_BEAMON = "images/beamon.png";
-var IMAGE_CLOUD1 = "images/cloud1.png";
+var IMAGE_CLOUD1 = "images/cloud4.png";
 var IMAGE_WIND = "images/wind2.png";
-var IMAGE_BIGCLOUD = "images/cloud2.png";
+var IMAGE_BIGCLOUD = "images/cloud3.png";
 var IMAGE_BACKGROUND = "images/background.jpg";
 var IMAGE_ITEM_POWER = "images/power.png";
 var IMAGE_ITEM_SPEED = "images/speed.png";
 var IMAGE_AIR = "images/air.png";
-var resources = [IMAGE_SUN, IMAGE_SPIRIT, IMAGE_BEAM, IMAGE_BEAMON, IMAGE_CLOUD1, IMAGE_WIND, IMAGE_BIGCLOUD, IMAGE_BACKGROUND, IMAGE_ITEM_POWER, IMAGE_ITEM_SPEED, IMAGE_AIR];
+var IMAGE_TITLE = "images/title.png";
+var IMAGE_STARTBUTTON = "images/startbutton.png";
+var IMAGE_GAMEOVER = "images/gameover.png";
+var resources = [IMAGE_SUN, IMAGE_SPIRIT, IMAGE_BEAM, IMAGE_BEAMON, IMAGE_CLOUD1, IMAGE_WIND, IMAGE_BIGCLOUD, IMAGE_BACKGROUND, IMAGE_ITEM_POWER, IMAGE_ITEM_SPEED, IMAGE_AIR, IMAGE_TITLE, IMAGE_STARTBUTTON, IMAGE_GAMEOVER];
 
 var mouseX;
 var mouseY;
@@ -28,6 +32,9 @@ var touchX = -1;
 var touchY = -1;
 var speed = 10;
 var power = 1;
+var time = 0;
+var startTime;
+var endTime;
 
 window.onload = function() {
 	game = new Core(GAME_WIDTH, GAME_HEIGHT);
@@ -44,8 +51,10 @@ window.onload = function() {
 	game.onload = function() {
 
 		sceneGame = new GameScene();
-
 		this.pushScene(sceneGame);
+		sceneTitle = new TitleScene();
+		this.pushScene(sceneTitle);
+		sceneGameOver = new GameOverScene();
 
 	};
 	game.start();
@@ -64,11 +73,11 @@ var GameScene = Class.create(enchant.Scene, {
 		background.image = game.assets[IMAGE_BACKGROUND];
 		this.addChild(background);
 
-		this.spriteBigCloud = new Sprite(400, 300);
+		this.spriteBigCloud = new Sprite(800, 400);
 		this.spriteBigCloud.x = (GAME_WIDTH - this.spriteBigCloud.width) / 2;
 		this.spriteBigCloud.image = game.assets[IMAGE_BIGCLOUD];
 		this.spriteBigCloud.scaleY = 0.2;
-		this.spriteBigCloud.y = this.spriteBigCloud.height * (1 - this.spriteBigCloud.scaleY) / 2 + 100;
+		this.spriteBigCloud.y = this.spriteBigCloud.height * (1 - this.spriteBigCloud.scaleY) / 2;
 		this.addChild(this.spriteBigCloud);
 
 		this.spriteBeam = new Sprite(1000, 20);
@@ -78,6 +87,7 @@ var GameScene = Class.create(enchant.Scene, {
 
 		this.spriteSun = new Sprite(100, 100);
 		this.spriteSun.image = game.assets[IMAGE_SUN];
+		this.spriteSun.x = (GAME_WIDTH - this.spriteSun.width) / 2;
 		this.addChild(this.spriteSun);
 		// 日光の当たる配列
 		this.elements = [];
@@ -102,10 +112,8 @@ var GameScene = Class.create(enchant.Scene, {
 		this.spriteSpirits[3].y = 700;
 
 		this.spriteClouds = [];
-		for (var i = 0; i < 1; i++) {
-			this.createCloud(200, 500, 1);
-		}
-		this.createCloud(600, 500, 1);
+		//this.createCloud(200, 500, 1);
+		//this.createCloud(600, 500, 1);
 
 		this.spriteAirs = [];
 
@@ -127,10 +135,20 @@ var GameScene = Class.create(enchant.Scene, {
 		this.labelSpeed.font = "24px sans-serif";
 		this.addChild(this.labelSpeed);
 
+		this.labelTime = new Label();
+		this.labelTime.x = 650;
+		this.labelTime.y = 100;
+		this.labelTime.color = "white";
+		this.labelTime.font = "32px sans-serif";
+		this.labelTime.textAlign = 'left';
+		this.labelTime.width = 200;
+		this.addChild(this.labelTime);
+
 		var parent = this;
 		window.document.onmouseup = function(e) {
 			console.log("mouseup");
 			parent.beamOn = false;
+			parent.spriteSun.frame = [0];
 			parent.spriteBeam.image = game.assets[IMAGE_BEAM];
 			parent.spriteBeam.frame = [0];
 		};
@@ -149,12 +167,14 @@ var GameScene = Class.create(enchant.Scene, {
 			touchY = -1;
 		};
 		this.addChild(this.spriteMove);
+		game.keybind(65, "a");
+		game.keybind(68, "d");
 	},
 	onenterframe : function() {
-		if (game.input.left || (touchX >= 0 && touchX < this.spriteSun.x + this.spriteSun.width / 2 && touchY < this.spriteSun.height)) {
+		if (game.input.left || game.input.a || (touchX >= 0 && touchX < this.spriteSun.x + this.spriteSun.width / 2 && touchY < this.spriteSun.height)) {
 			this.spriteSun.x -= speed;
 		}
-		if (game.input.right || (touchX >= 0 && touchX > this.spriteSun.x + this.spriteSun.width / 2 && touchY < this.spriteSun.height)) {
+		if (game.input.right || game.input.d || (touchX >= 0 && touchX > this.spriteSun.x + this.spriteSun.width / 2 && touchY < this.spriteSun.height)) {
 			this.spriteSun.x += speed;
 		}
 		if (this.spriteSun.x < -this.spriteSun.width / 2) {
@@ -238,8 +258,13 @@ var GameScene = Class.create(enchant.Scene, {
 		for (var i = 0; i < this.spriteClouds.length; i++) {
 			if (this.spriteClouds[i].y < 340) {
 				this.spriteBigCloud.scaleY += this.spriteClouds[i].size / 10;
-				this.spriteBigCloud.y = this.spriteBigCloud.height * (1 - this.spriteBigCloud.scaleY) / 2 + 100;
+				this.spriteBigCloud.y = this.spriteBigCloud.height * (1 - this.spriteBigCloud.scaleY) / 2;
 				this.removeCloud(this.spriteClouds[i]);
+				if (this.spriteBigCloud.scaleY > 1) {
+					game.pushScene(sceneGameOver);
+					endTime = (new Date()).getTime();
+					sceneGameOver.labelTime.text = Math.floor((endTime - startTime)/1000) + "秒";
+				}
 				break;
 			}
 		}
@@ -330,7 +355,7 @@ var GameScene = Class.create(enchant.Scene, {
 		}
 
 		// アイテム生成
-		if (Math.random() > 0.995) {
+		if (Math.random() > 0.997) {
 			this.addItem(Math.random() * (GAME_WIDTH - 100), 700);
 		}
 		for (var i = 0; i < this.spriteItems.length; i++) {
@@ -346,9 +371,12 @@ var GameScene = Class.create(enchant.Scene, {
 				}
 			}
 		}
+
+		this.labelTime.text = "Time: " + Math.floor(((new Date()).getTime() - startTime) / 1000);
 	},
 	ontouchstart : function(e) {
 		this.beamOn = true;
+		this.spriteSun.frame = [1, 1, 2, 2];
 		this.spriteBeam.image = game.assets[IMAGE_BEAMON];
 		this.spriteBeam.frame = [0, 0, 1, 1, 2, 2];
 		mouseX = e.x;
@@ -358,6 +386,7 @@ var GameScene = Class.create(enchant.Scene, {
 	ontouchend : function(e) {
 		console.log("touchend");
 		this.beamOn = false;
+		this.spriteSun.frame = [0];
 		this.spriteBeam.image = game.assets[IMAGE_BEAM];
 		this.spriteBeam.frame = [0];
 	},
@@ -487,3 +516,44 @@ function moveCloudAir(spriteClouds, spriteWinds) {
 		}
 	}
 }
+
+var TitleScene = Class.create(enchant.Scene, {
+	initialize : function() {
+		enchant.Scene.call(this);
+
+		var desc = new Sprite(800, 800);
+		desc.image = game.assets[IMAGE_TITLE];
+		this.addChild(desc);
+
+		var startbutton = new Sprite(300, 100);
+		startbutton.image = game.assets[IMAGE_STARTBUTTON];
+		startbutton.x = (GAME_WIDTH - startbutton.width) / 2;
+		startbutton.y = 700;
+		startbutton.ontouchend = function() {
+			game.popScene();
+			startTime = (new Date()).getTime();
+		};
+		this.addChild(startbutton);
+	}
+});
+
+var GameOverScene = Class.create(enchant.Scene, {
+	initialize : function() {
+		enchant.Scene.call(this);
+
+		var gameover = new Sprite(400, 400);
+		gameover.image = game.assets[IMAGE_GAMEOVER];
+		gameover.x = (GAME_WIDTH - gameover.width) / 2;
+		gameover.y = (GAME_HEIGHT - gameover.height) / 2;
+		this.addChild(gameover);
+		
+		this.labelTime = new Label();
+		this.labelTime.x = 360;
+		this.labelTime.y = 380;
+		this.labelTime.color = "black";
+		this.labelTime.font = "64px sans-serif";
+		this.labelTime.textAlign = 'left';
+		this.labelTime.width = 200;
+		this.addChild(this.labelTime);
+	}
+});
