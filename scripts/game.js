@@ -116,6 +116,7 @@ var GameScene = Class.create(enchant.Scene, {
 		//this.createCloud(600, 500, 1);
 
 		this.spriteAirs = [];
+		this.createAir((GAME_WIDTH - 100) * Math.random(), 700, 1);
 
 		this.beamOn = false;
 		this.spriteWinds = [];
