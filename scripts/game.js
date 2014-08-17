@@ -263,7 +263,7 @@ var GameScene = Class.create(enchant.Scene, {
 				if (this.spriteBigCloud.scaleY > 1) {
 					game.pushScene(sceneGameOver);
 					endTime = (new Date()).getTime();
-					sceneGameOver.labelTime.text = Math.floor((endTime - startTime)/1000) + "秒";
+					sceneGameOver.labelTime.text = Math.floor((endTime - startTime) / 1000) + "秒";
 				}
 				break;
 			}
@@ -546,7 +546,7 @@ var GameOverScene = Class.create(enchant.Scene, {
 		gameover.x = (GAME_WIDTH - gameover.width) / 2;
 		gameover.y = (GAME_HEIGHT - gameover.height) / 2;
 		this.addChild(gameover);
-		
+
 		this.labelTime = new Label();
 		this.labelTime.x = 360;
 		this.labelTime.y = 380;
